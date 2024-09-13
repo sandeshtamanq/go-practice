@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	dsn := "host= user= password= dbname= port=5432 sslmode=disable TimeZone=Asia/Kathmandu"
+	dsn := "host=localhost user= password= dbname= port= sslmode=disable TimeZone=Asia/Kathmandu"
 	db, err := database.NewPostgresStorage(dsn)
 	if err != nil {
 		log.Fatal(err)

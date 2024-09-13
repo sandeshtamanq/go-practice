@@ -36,3 +36,13 @@ func (r *Repository) GetUserByEmail(email string) error {
 	return nil
 
 }
+
+func (r *Repository) GetUserById(userId int) (*entity.User, error) {
+	var user entity.User
+
+	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

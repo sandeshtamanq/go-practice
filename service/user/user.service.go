@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/sandeshtamanq/jwt/entity"
-	"github.com/sandeshtamanq/jwt/error"
 	"github.com/sandeshtamanq/jwt/utils"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,7 +25,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var user entity.User
 
 	if r.Body == nil {
-		error.WriteError(w, http.StatusBadRequest, fmt.Errorf("empty body"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("empty body"))
 	}
 
 	utils.ParseJSON(r, &user)
@@ -41,14 +40,14 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	err = userRepository.GetUserByEmail(user.Email)
 
 	if err != nil {
-		error.WriteError(w, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		utils.WriteError(w, http.StatusBadRequest, map[string]string{"message": err.Error()})
 		return
 	}
 
 	err = userRepository.RegisterUser(&user)
 
 	if err != nil {
-		error.WriteError(w, http.StatusBadRequest, err)
+		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 

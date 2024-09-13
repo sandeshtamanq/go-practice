@@ -1,11 +1,9 @@
-package error
+package utils
 
 import (
 	"net/http"
-
-	"github.com/sandeshtamanq/jwt/utils"
 )
 
 func WriteError(w http.ResponseWriter, status int, v any) {
-	utils.WriteJSON(w, status, v)
+	WriteJSON(w, status, v)
 }

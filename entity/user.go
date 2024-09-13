@@ -12,6 +12,7 @@ type User struct {
 	LastName  string         `gorm:"not null" json:"last_name"`
 	Password  string         `gorm:"not null" json:"password"`
 	Email     string         `gorm:"not null" json:"email"`
+	Tasks     []Task         `json:"tasks"`
 	CreatedAt time.Time      `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime" json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"deletedAt"`
