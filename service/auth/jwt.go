@@ -6,11 +6,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sandeshtamanq/jwt/database"
 	"github.com/sandeshtamanq/jwt/entity"
-	"github.com/sandeshtamanq/jwt/service/user"
 	"github.com/sandeshtamanq/jwt/utils"
 )
 
@@ -18,12 +19,14 @@ var secretKey = "superSecretKey"
 
 type contextKey string
 
-const userKey contextKey = "userId"
+const UserKey contextKey = "userId"
 
 func ValidateJwt(handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userRepository := user.UserRepository()
-		tokenStr := GetTokenFromRequest(r)
+		var user entity.User
+		authToken := GetTokenFromRequest(r)
+
+		tokenStr := strings.Split(authToken, " ")[1]
 
 		token, err := VerifyJwt(tokenStr)
 
@@ -49,16 +52,15 @@ func ValidateJwt(handlerFunc http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		u, err := userRepository.GetUserById(userId)
-
-		if err != nil {
+		if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
 			permissionDenied(w)
+
 			return
 		}
 
 		ctx := r.Context()
 
-		ctx = context.WithValue(ctx, userKey, u.ID)
+		ctx = context.WithValue(ctx, UserKey, user.ID)
 		r = r.WithContext(ctx)
 
 		handlerFunc(w, r)
@@ -66,16 +68,16 @@ func ValidateJwt(handlerFunc http.HandlerFunc) http.HandlerFunc {
 
 }
 
-func CreateJwt(secret []byte, payload entity.User) (string, error) {
+func CreateJwt(payload *entity.User) (string, error) {
 	expiration := time.Second * time.Duration(3000)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId":     payload.ID,
+		"userId":     strconv.Itoa(int(payload.ID)),
 		"email":      payload.Email,
 		"expiration": time.Now().Add(expiration).Unix(),
 	})
 
-	tokenStr, err := token.SignedString(secretKey)
+	tokenStr, err := token.SignedString([]byte(secretKey))
 
 	if err != nil {
 		return "", err
@@ -110,14 +112,14 @@ func GetTokenFromRequest(r *http.Request) string {
 }
 
 func permissionDenied(w http.ResponseWriter) {
-	utils.WriteError(w, http.StatusForbidden, fmt.Errorf("permission denied"))
+	utils.WriteError(w, http.StatusForbidden, map[string]string{"message": "forbidden resource"})
 }
 
-func GetCurrentUserId(ctx context.Context) int {
-	userId, ok := ctx.Value(userKey).(int)
+func GetCurrentUserId(ctx context.Context) uint {
+	userId := ctx.Value(UserKey).(uint)
 
-	if !ok {
-		return -1
+	if userId < 1 {
+		return 0
 	}
 
 	return userId

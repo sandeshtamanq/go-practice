@@ -27,7 +27,12 @@ func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 
 	userId := auth.GetCurrentUserId(r.Context())
 
-	t.UserID = uint(userId)
+	if userId < 1 {
+		utils.WriteError(w, http.StatusBadRequest, map[string]string{"message": "something went wrong"})
+		return
+	}
+
+	t.UserID = userId
 
 	err := taskRepository.CreateTask(&t)
 
@@ -40,5 +45,13 @@ func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetTask(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, 200, map[string]string{"message": "task created successfully"})
+	taskRepository := TaskRepository()
+	userId := auth.GetCurrentUserId(r.Context())
+	tasks, err := taskRepository.GetTask(userId)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+	}
+
+	utils.WriteJSON(w, 200, tasks)
 }

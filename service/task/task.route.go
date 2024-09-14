@@ -12,7 +12,7 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/add-task", HandleAddTask).Methods("POST")
+	router.HandleFunc("/add-task", auth.ValidateJwt(HandleAddTask)).Methods("POST")
 	router.HandleFunc("/get-task", auth.ValidateJwt(HandleGetTask)).Methods("GET")
 
 }

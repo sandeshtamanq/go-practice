@@ -21,3 +21,12 @@ func (r *Repository) CreateTask(t *entity.Task) error {
 	}
 	return nil
 }
+
+func (r *Repository) GetTask(userId uint) (*[]entity.Task, error) {
+	var tasks []entity.Task
+
+	err := database.DB.Preload("User").Where("user_id = ?", userId).Find(&tasks).Error
+
+	return &tasks, err
+
+}

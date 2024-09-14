@@ -1,8 +1,6 @@
 package user
 
 import (
-	"fmt"
-
 	"github.com/sandeshtamanq/jwt/database"
 	"github.com/sandeshtamanq/jwt/entity"
 )
@@ -27,13 +25,11 @@ func (r *Repository) RegisterUser(u *entity.User) error {
 	return nil
 }
 
-func (r *Repository) GetUserByEmail(email string) error {
+func (r *Repository) GetUserByEmail(email string) (*entity.User, error) {
 	var user entity.User
-	if err := database.DB.Where("email = ?", email).First(&user).Error; err == nil {
-		return fmt.Errorf("user with email %v already exists", user.Email)
-	}
+	err := database.DB.Where("email = ?", email).First(&user).Error
 
-	return nil
+	return &user, err
 
 }
 
